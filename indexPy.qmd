@@ -1,0 +1,424 @@
+---
+title: "University Ranking"
+author: "Honorine,Nastaran, Simon"
+format: 
+  html:
+    toc: true 
+    toc-depth: 3 
+    number-sections: true
+    code-fold: true
+    code-tools: true
+bibliography: references.bib
+---
+
+```{=html}
+<iframe class="slide-deck" style="border:1px solid lightgray;" width="100%" height="500" src="presentation.html"></iframe>
+```
+[Presentation in standalone browser tab.](presentation.html){.internal target="_blank"}
+
+
+# Executive Summary
+# Introduction
+
+# Outline
+
+*What questions will the report address and why?*
+This study will address the following questions: 
+</p>
+
+1. How do different universities rank based on their teaching, research productivity, and international outlook? 
+
+2. ⁠What is the relationship between research income, citation impact, and overall university ranking?​
+
+3. ⁠Which countries or universities demonstrate the highest levels of industry income and knowledge transfer?​
+​
+```{python}
+#| include: false
+#| results: hide
+import pandas as pd
+import numpy as np
+import seaborn as sns
+from pandas.core.tools.numeric import to_numeric
+import geopandas as gpd
+
+import plotly as px
+import plotly.express as px # for interactive plots
+import plotly.graph_objs as go
+from plotly.subplots import make_subplots
+import matplotlib.pyplot as plt
+
+import os
+import warnings
+warnings.filterwarnings("ignore")
+```
+
+
+# Data Source
+<p style="text-align: justify;" >
+The Times Higher Education World University Rankings are the only global performance tables that judge research-intensive universities across all their core missions: teaching, research, knowledge transfer and international outlook.
+
+We use 18 carefully calibrated performance indicators to provide the most comprehensive and balanced comparisons, trusted by students, academics, university leaders, industry and governments. One of the metrics (study abroad) currently has zero weight but will be counted in future (see below).
+
+The performance indicators are grouped into five areas: Teaching (the learning environment); Research environment (volume, income and reputation); Research quality (citation impact, research strength, research excellence and research influence);
+</p>
+
+```{python}
+#Loading the dataset
+df = pd.read_csv('C:/Users/Nastaran/Desktop/UniversityConstructor/semester3/Vitualization/FinalProject/DataStory_UniversityRanking/data/data.csv')
+
+```
+
+
+```{python}
+df.head(10)
+```
+
+
+```{python}
+df.columns
+```
+
+
+```{python}
+#Dropping of unnecessary columns
+#  list of columns to drop
+columns_to_drop = [
+    'stats_number_students', 'stats_student_staff_ratio', 'stats_pc_intl_students',
+    'stats_female_male_ratio', 'stats_proportion_of_isr', 'aliases',
+    'subjects_offered',   
+]
+
+# Drop the specified columns
+df.drop(columns=columns_to_drop, inplace=True)
+
+# Display the updated DataFrame
+print(df)
+```
+
+```{python}
+#Data cleansing and wrangling continuos
+#import pandas as pd
+
+# Check the index of the DataFrame to see if row 0 exists
+print(df.index)
+
+# Only attempt to drop the row if it exists
+if 0 in df.index:
+    df.drop(labels=[0], axis=0, inplace=True)
+
+# Reset the index without keeping the old index as a column
+df.reset_index(drop=True, inplace=True)
+
+# Select the first 150 rows
+df = df[:150]
+
+# Define your score columns (if needed later)
+score_col = [
+    "scores_teaching_rank", 
+    "scores_research_rank", 
+    "scores_international_outlook_rank", 
+    "scores_citations_rank", 
+    
+]
+
+# Now the DataFrame is cleaned and ready to use
+print(df.head())
+```
+
+
+```{python}
+#To find if missing values are present in my dataset I use isnull function. 
+
+df.isnull()
+```
+
+
+```{python}
+# check Null values in each column in the dataset
+
+def check_NullValues():
+    out=df.isnull().sum()
+    found=0
+    for counter in out.index:
+        if out[counter]>0:
+            found=found+1
+            print( "column", counter , " is having ",out[counter] , "Null values")
+
+
+    if(found==0):
+        print("No Null values found in dataframe")
+```
+
+```{python}
+#Show Null value columns alongwith quantity of Null values 
+check_NullValues()
+```
+
+```{python}
+#Considering the first 150 top schools for simplicity and creating a new dataset
+
+import pandas as pd
+
+# Check the index of the DataFrame to see if row 0 exists
+print(df.index)
+
+# Only attempt to drop the row if it exists
+if 0 in df.index:
+    df.drop(labels=[0], axis=0, inplace=True)
+
+# Reset the index without keeping the old index as a column
+df.reset_index(drop=True, inplace=True)
+
+# Select the first 150 rows
+df = df[:150]
+
+# Define your score columns (if needed later)
+score_col = [
+    "scores_teaching_rank", 
+    "scores_research_rank", 
+    "scores_international_outlook_rank", 
+    "scores_citations_rank"
+]
+
+# Print the first few rows of the cleaned DataFrame
+print(df.head())
+
+# Save the new DataFrame to a CSV file
+df.to_csv('top_150_universities.csv', index=False)
+
+```
+
+```{python}
+# Loading the new dataset
+df_new = pd.read_csv('top_150_universities.csv')
+```
+
+```{python}
+df.head(10)
+```
+
+
+# Visualisation
+
+```{python}
+# Location for the first 150 schools
+fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(8,8))
+fig.set_facecolor('#f0f0f0') 
+
+top_150 = df[:150]
+top_150_by_country = top_150['location'].value_counts().reset_index()
+top_150_by_country.columns = ['location', 'Count']
+top_150_by_country.set_index('location', inplace=True)
+top_150_by_country.plot(kind='bar', y='Count', ylabel='Count', ax=axes, title='Top 150 By Country')
+axes.bar_label(axes.containers[0])
+
+plt.show()
+plt.clf()
+```
+
+```{python}
+plt.style.use('Solarize_Light2')
+plt.figure(figsize=(15,10))
+sns.countplot(data=df,y='location')                   
+plt.xticks(rotation='vertical')
+plt.title('Top Universities ',fontsize=40)           
+plt.ylabel('Count',fontsize=25)                                 
+plt.xlabel('Top Rank Universities Per Country',fontsize=25)     
+plt.show()
+```
+
+```{python}
+#rankings of university for comparison of  the different categories:research and international outlook using horizontal bar chart
+
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(20,10))
+fig.set_facecolor('#f0f0f0') 
+
+# Rank schools by 
+academic_rep_score = df.sort_values(by='scores_teaching_rank', ascending=False)
+academic_rep_score[:10].set_index('name').plot(kind='barh', y='scores_research_rank', ax=axes[0])
+axes[0].bar_label(axes[0].containers[0])
+
+employer_rep_score = df.sort_values(by='scores_international_outlook_rank', ascending=False)
+# print(employer_rep_score[['Institution Name', 'Employer Reputation Score']])
+employer_rep_score[:10].set_index('location').plot(kind='barh', y='scores_international_outlook_rank', ax=axes[1])
+axes[1].bar_label(axes[1].containers[0])
+
+del academic_rep_score, employer_rep_score
+```
+
+```{python}
+#Distribution of scores accross various categories.
+
+fig, ax = plt.subplots(figsize=(20,8))
+for index, col in enumerate(score_col):
+    sns.histplot(df[col], label=col, bins=20, kde =False, color = sns.color_palette("Set1")[index],ax=ax, multiple="stack")
+
+ax.legend(loc="upper left", bbox_to_anchor=(1, 1))
+plt.ylabel(ylabel = "Number of Schools", fontsize=25)
+plt.xticks(fontsize = 15)
+plt.yticks(fontsize = 15)
+plt.xlabel(xlabel= "Score", fontsize=25)
+fig.suptitle('Distribution of Score Across Various Categories', fontsize=20, x = 0.5, y = 0.95)
+plt.show()
+```
+
+```{python}
+fig, ax = plt.subplots(figsize=(20, 8))
+
+# Loop over the score columns and plot their distribution
+for index, col in enumerate(score_col):
+    sns.histplot(df[col], label=col, bins=np.arange(0, 105, 5), kde=False, 
+                 color=sns.color_palette("Set1")[index], ax=ax, multiple="stack")
+
+# Set the x-axis limit between 0 and 100 (score range)
+plt.xlim(0, 100)
+
+# Set x-axis ticks with a step of 5
+plt.xticks(np.arange(0, 105, 5), fontsize=10)
+
+# Add legend
+ax.legend(loc="upper left", bbox_to_anchor=(1, 1))
+
+# Labeling
+plt.ylabel("Number of Schools", fontsize=15)
+plt.xlabel("Score", fontsize=15)
+plt.yticks(fontsize=10)
+
+# Add title
+fig.suptitle('Distribution of Score Across Various Categories', fontsize=25, x=0.5, y=0.95)
+
+# Show the plot
+plt.show()
+```
+
+```{python}
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy.stats import pearsonr
+
+# Column names from the  dataset
+research_rank_col = 'scores_research_rank'
+citation_rank_col = 'scores_citations_rank'
+overall_rank_col = 'scores_overall_rank'
+
+# 1. Calculate the correlation between the variables
+correlation_matrix = df[[research_rank_col, citation_rank_col, overall_rank_col]].corr()
+print("Correlation matrix:")
+print(correlation_matrix)
+
+# Calculate Pearson correlation for individual pairs
+corr_income_citation, _ = pearsonr(df[research_rank_col], df[citation_rank_col])
+corr_income_ranking, _ = pearsonr(df[research_rank_col], df[overall_rank_col])
+corr_citation_ranking, _ = pearsonr(df[citation_rank_col], df[overall_rank_col])
+
+print(f"Pearson correlation between Research Rank and Citation Rank: {corr_income_citation:.2f}")
+print(f"Pearson correlation between Research Rank and Overall Rank: {corr_income_ranking:.2f}")
+print(f"Pearson correlation between Citation Rank and Overall Rank: {corr_citation_ranking:.2f}")
+
+# 2. Scatter Plot with Trend Line
+plt.figure(figsize=(18, 6))
+
+# Research Rank vs. Citation Rank
+plt.subplot(1, 3, 1)
+sns.regplot(x=research_rank_col, y=citation_rank_col, data=df, scatter_kws={'s': 50}, line_kws={'color': 'red'})
+plt.title('Research Rank vs Citation Rank', fontsize=15)
+plt.xlabel('Research Rank', fontsize=12)
+plt.ylabel('Citation Rank', fontsize=12)
+
+# Research Rank vs. Overall Rank
+plt.subplot(1, 3, 2)
+sns.regplot(x=research_rank_col, y=overall_rank_col, data=df, scatter_kws={'s': 50}, line_kws={'color': 'red'})
+plt.title('Research Rank vs Overall Rank', fontsize=15)
+plt.xlabel('Research Rank', fontsize=12)
+plt.ylabel('Overall Rank', fontsize=12)
+
+# Citation Rank vs. Overall Rank
+plt.subplot(1, 3, 3)
+sns.regplot(x=citation_rank_col, y=overall_rank_col, data=df, scatter_kws={'s': 50}, line_kws={'color': 'red'})
+plt.title('Citation Rank vs Overall Rank', fontsize=15)
+plt.xlabel('Citation Rank', fontsize=12)
+plt.ylabel('Overall Rank', fontsize=12)
+
+# Display the plots
+plt.tight_layout()
+plt.show()
+
+```
+
+The charts illustrate the relationships between Research Rank, Citation Rank, and Overall Rank for various institutions.
+Key Insights:
+1.	Correlation Matrix:
+•	The Pearson correlation coefficients provide a quick overview of the relationships:
+	Research Rank and Citation Rank have almost no correlation (-0.01), meaning performance in research does not strongly predict citation impact.
+	Research Rank and Overall Rank have a high positive correlation (0.88), suggesting that institutions with stronger research ranks also tend to perform better overall.
+	Citation Rank and Overall Rank show a moderate positive correlation (0.31), meaning citations contribute to the overall ranking but not as significant as research does.
+2.	Scatter Plots:
+•	Research Rank vs Citation Rank:
+	The data points are scattered with no clear trend, reflecting the low correlation. The confidence interval (the shaded area around the line) is flat, indicating that changes in research rank do not consistently predict changes in citation rank.
+•	Research Rank vs Overall Rank:
+	A strong positive linear relationship is evident, with the line of best fit showing a clear trend where better research ranks are associated with better overall ranks. The narrow confidence interval around the line suggests high reliability in this relationship.
+•	Citation Rank vs Overall Rank:
+	While there is a positive trend, the confidence interval is wider compared to the Research vs Overall Rank plot, indicating more uncertainty. This suggests that while citation rank does influence overall rank, the relationship is not as consistent or strong as with research rank.
+**Summary:**
+The confidence intervals (shaded areas) around the regression lines show how certain we are about the relationship between the ranks. Narrower intervals (like in the Research Rank vs Overall Rank plot) indicate a more reliable and strong relationship. Wider intervals (as seen in Citation Rank vs Overall Rank) reflect more uncertainty and less consistency in the data. Overall, research rank is a much stronger predictor of a university's overall ranking than citation rank, which has a weaker and less predictable influence.
+
+
+## Main Insight
+
+*Better give a more substantive title!*
+
+This should present your main point visually with at least one but probably more figures, like @fig-mainvisual
+
+:::{.callout-important collapse=false appearance='default' icon=true}
+Key evaluation criteria are: 
+
+- I your main insight is 
+    - well motivated, 
+    - well told,
+    - well supported by data
+    - appropriately visualized.
+- The insight itself need not be very deep or novel. However, it should also not be trvial. 
+
+:::
+
+*In this core section, refer here to*
+
+- *Additional visualizations and analysis below*
+- *Interactive Visualization / Dashboard below*
+
+## Additional insights
+
+*Better give a more substantial title.*
+
+### You may have subsections here or elsewhere
+
+### However, subsections usually make sense when there is more than one
+
+## Conclusion
+
+*Topics like: What have we learned? How does it fit in or help in broader contexts? Any actions recommended? What remains open? What are next steps? Which of these questions are most relevant depends on the type of your project.*
+
+## Interactive Visualization / Data Dashboard {.appendix}
+
+*Either have this here or on another webpage (new quarto file).*
+
+*Interactive visualizations may also appear above.* 
+
+*The focus here is to provide the reader with sensible ways to explore the data independently. You have to think about what could be of interest.*
+
+
+
+
+## Data Source {.appendix}
+
+*If specific information and details about the data source would be too long in the "Outline" section, put it in an appendix section.* 
+
+## Other appendix sections {.appendix}
+
+*Do the same with other text which distracts the reading of the main text. *
+
+## References {.unnumbered .appendix}
+
+::: {#refs}
+:::

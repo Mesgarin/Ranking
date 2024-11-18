@@ -1,0 +1,16 @@
+---
+title: "University Ranking Final Project"
+author: "Honorine,Nastaran,Simon"
+format: 
+  html:
+    toc: true 
+    toc-depth: 3 
+    number-sections: true
+    code-fold: true
+    code-tools: true
+bibliography: references.bib
+---
+```{=html}
+<iframe class="slide-deck" style="border:1px solid lightgray;" width="100%" height="500" src="presentationFN.html"></iframe>
+```
+[Presentation in standalone browser tab.](presentationFN.html){.internal target="_blank"}
