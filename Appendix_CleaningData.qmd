@@ -1,0 +1,226 @@
+---
+title: "Untitled"
+format: html
+---
+```{python}
+#| include: false
+#| results: hide
+#| include: false
+import pandas as pd
+import numpy as np
+import seaborn as sns
+from pandas.core.tools.numeric import to_numeric
+import geopandas as gpd
+
+import plotly as px
+import plotly.express as px # for interactive plots
+import plotly.graph_objs as go
+from plotly.subplots import make_subplots
+import matplotlib.pyplot as plt
+
+import os
+import warnings
+warnings.filterwarnings("ignore")
+```
+
+
+# Data Source
+## University Ranking Data Set
+
+```{python}
+#Loading the dataset
+df = pd.read_csv('C:/Users/Nastaran/Desktop/UniversityConstructor/semester3/Vitualization/FinalProject/DataStory_UniversityRanking/data/data.csv')
+
+```
+```{python}
+df.head(10)
+```
+
+```{python}
+#Dropping of unnecessary columns
+#  list of columns to drop
+columns_to_drop = [
+    'stats_number_students', 'stats_student_staff_ratio', 'stats_pc_intl_students',
+    'stats_female_male_ratio', 'stats_proportion_of_isr', 'aliases',
+    'subjects_offered',   
+]
+
+# Drop the specified columns
+df.drop(columns=columns_to_drop, inplace=True)
+
+# Display the updated DataFrame
+print(df)
+```
+
+```{python}
+#Data cleansing and wrangling continuos
+#import pandas as pd
+
+# Check the index of the DataFrame to see if row 0 exists
+print(df.index)
+
+# Only attempt to drop the row if it exists
+if 0 in df.index:
+    df.drop(labels=[0], axis=0, inplace=True)
+
+# Reset the index without keeping the old index as a column
+df.reset_index(drop=True, inplace=True)
+
+# Select the first 150 rows
+df = df[:150]
+
+# Define your score columns (if needed later)
+score_col = [
+    "scores_teaching_rank", 
+    "scores_research_rank", 
+    "scores_international_outlook_rank", 
+    "scores_citations_rank", 
+    
+]
+
+# Now the DataFrame is cleaned and ready to use
+print(df.head())
+```
+
+
+```{python}
+#To find if missing values are present in my dataset I use isnull function. 
+
+df.isnull()
+```
+
+
+```{python}
+# check Null values in each column in the dataset
+
+def check_NullValues():
+    out=df.isnull().sum()
+    found=0
+    for counter in out.index:
+        if out[counter]>0:
+            found=found+1
+            print( "column", counter , " is having ",out[counter] , "Null values")
+
+
+    if(found==0):
+        print("No Null values found in dataframe")
+```
+
+```{python}
+#Show Null value columns alongwith quantity of Null values 
+check_NullValues()
+```
+
+```{python}
+#Considering the first 150 top schools for simplicity and creating a new dataset
+
+import pandas as pd
+
+# Check the index of the DataFrame to see if row 0 exists
+print(df.index)
+
+# Only attempt to drop the row if it exists
+if 0 in df.index:
+    df.drop(labels=[0], axis=0, inplace=True)
+
+# Reset the index without keeping the old index as a column
+df.reset_index(drop=True, inplace=True)
+
+# Select the first 150 rows
+df = df[:150]
+
+# Define your score columns (if needed later)
+score_col = [
+    "scores_teaching_rank", 
+    "scores_research_rank", 
+    "scores_international_outlook_rank", 
+    "scores_citations_rank"
+]
+
+# Print the first few rows of the cleaned DataFrame
+print(df.head())
+
+# Save the new DataFrame to a CSV file
+df.to_csv('top_150_universities.csv', index=False)
+
+```
+
+```{python}
+# Loading the new dataset
+df_new = pd.read_csv('top_150_universities.csv')
+```
+
+```{python}
+df.head(10)
+```
+## WDI Dataset
+
+```{python}
+# Loading the dataset wdi
+dfWDI = pd.read_csv('C:/Users/Nastaran/Desktop/UniversityConstructor/semester3/Vitualization/FinalProject/DataStory_UniversityRanking/economics.csv')
+```
+```{python}
+dfWDI.head(10)
+
+```
+```{python}
+
+dfWDI.columns
+```
+
+```{python}
+data = pd.read_csv("C:/Users/Nastaran/Desktop/UniversityConstructor/semester3/Vitualization/FinalProject/DataStory_UniversityRanking/data/WDI2023_Data.csv")
+
+```
+
+```{python}
+data.head(10)
+```
+
+
+
+```{python}
+data_2023 = data[data['Series Name'].notnull() & data['Country Name'].notnull()]
+
+
+data_2023 = data_2023[['Country Name', 'Series Name', '2023 [YR2023]']]
+
+
+data_pivoted = data_2023.pivot(index='Country Name', columns='Series Name', values='2023 [YR2023]')
+
+
+df_economics = data_pivoted.reset_index()
+
+
+print(df_economics.head())
+print(df_economics.info())
+```
+
+```{python}
+df_economics.isnull()
+```
+
+```{python}
+df_economics.columns
+```
+
+```{python}
+# check Null values in each column in the dataset
+
+def check_NullValues():
+    out=df_economics.isnull().sum()
+    found=0
+    for counter in out.index:
+        if out[counter]>0:
+            found=found+1
+            print( "column", counter , " is having ",out[counter] , "Null values")
+
+
+    if(found==0):
+        print("No Null values found in dataframe")
+```
+
+```{python}
+#Show Null value columns alongwith quantity of Null values 
+check_NullValues()
+```
